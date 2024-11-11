@@ -1,5 +1,6 @@
 // src/components/FunctionCard.tsx
 import React, { useState } from "react";
+import Connector from "./Connector";
 
 interface FunctionCardProps {
   id: number;
@@ -7,6 +8,8 @@ interface FunctionCardProps {
   setEquation: (id: number, value: string) => void;
   output?: number | string;
   nextFunction: string;
+  connectorRefInput?: (element: HTMLDivElement | null) => void;
+  connectorRefOutput?: (element: HTMLDivElement | null) => void;
 }
 
 const FunctionCard: React.FC<FunctionCardProps> = ({
@@ -14,6 +17,8 @@ const FunctionCard: React.FC<FunctionCardProps> = ({
   equation,
   setEquation,
   nextFunction,
+  connectorRefInput,
+  connectorRefOutput,
 }) => {
   const [inputValue, setInputValue] = useState<string>(equation);
   const [error, setError] = useState<string | null>(null);
@@ -100,9 +105,20 @@ const FunctionCard: React.FC<FunctionCardProps> = ({
         </div>
       </div>
 
-      <div className="flex justify-between w-full text-gray-500 text-xs mt-6">
-        <span>Input</span>
-        <span>Output</span>
+      <div className="flex justify-between w-full text-gray-500 text-xs mt-5 relative">
+        <div className="flex items-center gap-2">
+          <span ref={connectorRefInput}>
+            <Connector size={20} />
+          </span>{" "}
+          Input
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span ref={connectorRefOutput}>
+            <Connector size={20} />
+          </span>{" "}
+          Output
+        </div>
       </div>
     </div>
   );

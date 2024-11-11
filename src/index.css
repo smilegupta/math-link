@@ -11,3 +11,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+#svg-lines {
+  position: absolute;
+  z-index: 10; /* or a value higher than other elements */
+  pointer-events: none; /* prevents interactions from blocking clicks on other elements */
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import FunctionCard from "./FunctionCard";
+import Connector from "./Connector";
 
 const INITIAL_VALUE = 2;
 
@@ -61,8 +62,8 @@ const FunctionChain: React.FC = () => {
     }
 
     const drawStraightLine = (
-      startElement: HTMLDivElement,
-      endElement: HTMLDivElement
+      startElement: HTMLDivElement | null,
+      endElement: HTMLDivElement | null
     ) => {
       if (startElement && endElement) {
         const startRect = startElement.getBoundingClientRect();
@@ -104,6 +105,46 @@ const FunctionChain: React.FC = () => {
       }
     };
 
+    const drawCurvedLine = (
+      startElement: HTMLDivElement | null,
+      endElement: HTMLDivElement | null
+    ) => {
+      if (startElement && endElement) {
+        const startRect = startElement.getBoundingClientRect();
+        const endRect = endElement.getBoundingClientRect();
+
+        const x1 = startRect.right;
+        const y1 = startRect.top + startRect.height / 2;
+        const x2 = endRect.left;
+        const y2 = endRect.top + endRect.height / 2;
+
+        const controlPointX1 = x1 + 275;
+        const controlPointY1 = y1 - 50;
+        const controlPointX2 = x2 - 270;
+        const controlPointY2 = y2 + 50;
+
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        const d = `
+          M ${x1} ${y1}
+          C ${controlPointX1} ${controlPointY1}, ${controlPointX2} ${controlPointY2}, ${x2} ${y2}
+        `;
+
+        path.setAttribute("d", d);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "#0066FF");
+        path.setAttribute("stroke-width", "4");
+        path.setAttribute("stroke-opacity", "0.5");
+        path.setAttribute("stroke-linecap", "round");
+
+        // Append to the SVG container
+        const svgContainer = document.getElementById("svg-lines");
+        svgContainer?.appendChild(path);
+      }
+    };
+
     const drawOffsetHorizontalLine = (
       startElement: HTMLDivElement | null,
       endElement: HTMLDivElement | null,
@@ -141,23 +182,13 @@ const FunctionChain: React.FC = () => {
       initialInputRef.current,
       cardRefs.current[0],
       10,
-      25
-    );
-    drawStraightLine(cardRefs.current[0], cardRefs.current[1]);
-    drawStraightLine(cardRefs.current[1], cardRefs.current[3]);
-    drawOffsetHorizontalLine(
-      cardRefs.current[3],
-      cardRefs.current[4],
-      125,
-      125
-    );
-    drawStraightLine(cardRefs.current[4], cardRefs.current[2]);
-    drawOffsetHorizontalLine(
-      cardRefs.current[2],
-      finalOutputRef.current,
-      25,
       10
     );
+    drawStraightLine(cardRefs.current[1], cardRefs.current[2]);
+    drawCurvedLine(cardRefs.current[3], cardRefs.current[6]);
+    drawStraightLine(cardRefs.current[7], cardRefs.current[8]);
+    drawCurvedLine(cardRefs.current[9], cardRefs.current[4]);
+    drawOffsetHorizontalLine(cardRefs.current[5], finalOutputRef.current, 10, 10);
   }, [outputs]);
 
   return (
@@ -185,35 +216,53 @@ const FunctionChain: React.FC = () => {
               </div>
             </div>
           </div>
-          <div ref={(el) => (cardRefs.current[0] = el as HTMLDivElement)}>
+          <div>
             <FunctionCard
               id={1}
               equation={equations[1]}
               setEquation={setEquation}
               output={outputs[1]}
               nextFunction="2"
+              connectorRefInput={(el) =>
+                (cardRefs.current[0] = el as HTMLDivElement)
+              }
+              connectorRefOutput={(el) =>
+                (cardRefs.current[1] = el as HTMLDivElement)
+              }
             />
           </div>
         </div>
 
-        <div ref={(el) => (cardRefs.current[1] = el as HTMLDivElement)}>
+        <div>
           <FunctionCard
             id={2}
             equation={equations[2]}
             setEquation={setEquation}
             output={outputs[2]}
             nextFunction="4"
+            connectorRefInput={(el) =>
+              (cardRefs.current[2] = el as HTMLDivElement)
+            }
+            connectorRefOutput={(el) =>
+              (cardRefs.current[3] = el as HTMLDivElement)
+            }
           />
         </div>
 
         <div className="flex gap-4 items-end">
-          <div ref={(el) => (cardRefs.current[2] = el as HTMLDivElement)}>
+          <div>
             <FunctionCard
               id={3}
               equation={equations[3]}
               setEquation={setEquation}
               output={outputs[3]}
               nextFunction="-"
+              connectorRefInput={(el) =>
+                (cardRefs.current[4] = el as HTMLDivElement)
+              }
+              connectorRefOutput={(el) =>
+                (cardRefs.current[5] = el as HTMLDivElement)
+              }
             />
           </div>
 
@@ -237,22 +286,34 @@ const FunctionChain: React.FC = () => {
       </div>
 
       <div className="flex space-x-36">
-        <div ref={(el) => (cardRefs.current[3] = el as HTMLDivElement)}>
+        <div>
           <FunctionCard
             id={4}
             equation={equations[4]}
             setEquation={setEquation}
             output={outputs[4]}
             nextFunction="5"
+            connectorRefInput={(el) =>
+              (cardRefs.current[6] = el as HTMLDivElement)
+            }
+            connectorRefOutput={(el) =>
+              (cardRefs.current[7] = el as HTMLDivElement)
+            }
           />
         </div>
-        <div ref={(el) => (cardRefs.current[4] = el as HTMLDivElement)}>
+        <div>
           <FunctionCard
             id={5}
             equation={equations[5]}
             setEquation={setEquation}
             output={outputs[5]}
             nextFunction="3"
+            connectorRefInput={(el) =>
+              (cardRefs.current[8] = el as HTMLDivElement)
+            }
+            connectorRefOutput={(el) =>
+              (cardRefs.current[9] = el as HTMLDivElement)
+            }
           />
         </div>
       </div>
@@ -261,39 +322,3 @@ const FunctionChain: React.FC = () => {
 };
 
 export default FunctionChain;
-
-const Connector = ({
-  size = 50,
-  innerColor = "#0066FF",
-  outerColor = "#B0B0B0",
-  opacity = 0.3,
-}) => {
-  const outerRadius = size * 0.4; // Outer ring radius
-  const innerRadius = size * 0.2; // Inner circle radius
-  const strokeWidth = Math.max(1, size * 0.1); // Adjust stroke width for small sizes
-  const center = size / 2;
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Outer ring */}
-      <circle
-        cx={center}
-        cy={center}
-        r={outerRadius}
-        stroke={outerColor}
-        strokeWidth={strokeWidth}
-        fill="none"
-        opacity={opacity}
-      />
-
-      {/* Inner solid circle */}
-      <circle cx={center} cy={center} r={innerRadius} fill={innerColor} />
-    </svg>
-  );
-};
