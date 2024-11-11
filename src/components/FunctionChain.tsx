@@ -51,26 +51,30 @@ const FunctionChain: React.FC = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center bg-gray-100 min-h-screen py-12 px-4">
-      <div className="flex flex-col items-center mb-10">
-        <label className="text-gray-600 mb-2">Initial Value of x</label>
-        <input
-          type="number"
-          value={initialValue}
-          onChange={(e) => setInitialValue(Number(e.target.value))}
-          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        <span className="text-xs text-gray-500 mt-2">Input</span>
-      </div>
-
+    <div className="relative flex flex-col items-center bg-gray-100 min-h-screen py-24 px-4">
       <div className="flex space-x-28 mb-24">
-        <FunctionCard
-          id={1}
-          equation={equations[1]}
-          setEquation={setEquation}
-          output={outputs[1]}
-          nextFunction="2"
-        />
+        <div className="flex gap-2 items-end">
+          <div className="flex flex-col items-center">
+            <label className="bg-[#E29A2D] text-white font-semibold px-4 py-1 rounded-full mb-2 text-sm">
+              Initial Value of x
+            </label>
+            <div className="border-2 border-[#E29A2D] w-fit bg-white rounded-xl flex items-center p-1">
+              <input
+                type="number"
+                value={initialValue}
+                onChange={(e) => setInitialValue(Number(e.target.value))}
+                className="text-black text-lg font-bold focus:outline-none px-3 py-2 rounded-l-full border-none w-[100px]"
+              />
+            </div>
+          </div>
+          <FunctionCard
+            id={1}
+            equation={equations[1]}
+            setEquation={setEquation}
+            output={outputs[1]}
+            nextFunction="2"
+          />
+        </div>
         <FunctionCard
           id={2}
           equation={equations[2]}
@@ -78,16 +82,33 @@ const FunctionChain: React.FC = () => {
           output={outputs[2]}
           nextFunction="4"
         />
-        <FunctionCard
-          id={3}
-          equation={equations[3]}
-          setEquation={setEquation}
-          output={outputs[3]}
-          nextFunction="-"
-        />
+
+        <div className="flex gap-4 items-end">
+          <FunctionCard
+            id={3}
+            equation={equations[3]}
+            setEquation={setEquation}
+            output={outputs[3]}
+            nextFunction="-"
+          />
+          <div className="flex flex-col items-center">
+            <label className="bg-[#4CAF79] text-white font-semibold px-4 py-1 rounded-full mb-2 text-sm">
+              Final Output y
+            </label>
+            <div className="border-2 border-[#4CAF79] w-fit bg-white rounded-xl flex items-center p-1">
+              <input
+                type="number"
+                value={initialValue}
+                onChange={(e) => setInitialValue(Number(e.target.value))}
+                className="text-black text-lg font-bold focus:outline-none px-3 py-2 rounded-l-full border-none w-[100px]"
+                readOnly
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="flex space-x-28 mb-8">
+      <div className="flex space-x-28">
         <FunctionCard
           id={4}
           equation={equations[4]}
@@ -102,15 +123,6 @@ const FunctionChain: React.FC = () => {
           output={outputs[5]}
           nextFunction="3"
         />
-      </div>
-
-      {/* Output Section */}
-      <div className="flex flex-col items-center">
-        <label className="text-gray-600 mb-2">Final Output (y)</label>
-        <div className="font-bold text-xl text-indigo-700 bg-indigo-100 py-2 px-4 rounded-md shadow-md">
-          {outputs[3]}
-        </div>
-        <span className="text-xs text-gray-500 mt-2">Output</span>
       </div>
     </div>
   );
