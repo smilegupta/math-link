@@ -63,7 +63,7 @@ const FunctionChain: React.FC = () => {
         <span className="text-xs text-gray-500 mt-2">Input</span>
       </div>
 
-      <div className="flex space-x-8 mb-8">
+      <div className="flex space-x-28 mb-24">
         <FunctionCard
           id={1}
           equation={equations[1]}
@@ -87,7 +87,7 @@ const FunctionChain: React.FC = () => {
         />
       </div>
 
-      <div className="flex space-x-8 mb-8">
+      <div className="flex space-x-28 mb-8">
         <FunctionCard
           id={4}
           equation={equations[4]}
