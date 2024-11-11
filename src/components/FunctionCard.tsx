@@ -1,11 +1,11 @@
 // src/components/FunctionCard.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 interface FunctionCardProps {
   id: number;
   equation: string;
   setEquation: (id: number, value: string) => void;
-  output: number | string;
+  output?: number | string;
   nextFunction: string;
 }
 
@@ -13,7 +13,6 @@ const FunctionCard: React.FC<FunctionCardProps> = ({
   id,
   equation,
   setEquation,
-  output,
   nextFunction,
 }) => {
   const [inputValue, setInputValue] = useState<string>(equation);

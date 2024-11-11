@@ -98,8 +98,7 @@ const FunctionChain: React.FC = () => {
             <div className="border-2 border-[#4CAF79] w-fit bg-white rounded-xl flex items-center p-1">
               <input
                 type="number"
-                value={initialValue}
-                onChange={(e) => setInitialValue(Number(e.target.value))}
+                value={outputs[3]}
                 className="text-black text-lg font-bold focus:outline-none px-3 py-2 rounded-l-full border-none w-[100px]"
                 readOnly
               />
