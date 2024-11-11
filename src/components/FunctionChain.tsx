@@ -18,9 +18,10 @@ const FunctionChain: React.FC = () => {
 
   const calculate = (equation: string, input: number): number | string => {
     try {
-      return eval(equation.replace(/x/g, input.toString()));
+      const result = eval(equation.replace(/x/g, `(${input})`));
+      return isNaN(result) ? "Error" : result;
     } catch (err) {
-      console.error(err);
+      console.error("Calculation error:", err);
       return "Error";
     }
   };
