@@ -6,7 +6,7 @@ const INITIAL_VALUE = 2;
 
 const FunctionChain: React.FC = () => {
   const [initialValue, setInitialValue] = useState<number>(INITIAL_VALUE);
-  const [equations, setEquations] = useState<{ [key: number]: string }>({
+  const [equations, setEquations] = useState({
     1: "x**2",
     2: "2*x + 4",
     3: "x**2 + 20",
@@ -25,26 +25,19 @@ const FunctionChain: React.FC = () => {
     try {
       const result = eval(equation.replace(/x/g, `(${input})`));
       return isNaN(result) ? "Error" : result;
-    } catch (err) {
-      console.error("Calculation error:", err);
+    } catch {
       return "Error";
     }
   };
 
-  const updateChain = () => {
-    const output1 = calculate(equations[1], initialValue);
-    const output2 = calculate(equations[2], Number(output1));
-    const output4 = calculate(equations[4], Number(output2));
-    const output5 = calculate(equations[5], Number(output4));
-    const output3 = calculate(equations[3], Number(output5));
+  const updateOutputs = () => {
+    const result1 = calculate(equations[1], initialValue);
+    const result2 = calculate(equations[2], Number(result1));
+    const result4 = calculate(equations[4], Number(result2));
+    const result5 = calculate(equations[5], Number(result4));
+    const result3 = calculate(equations[3], Number(result5));
 
-    setOutputs({
-      1: output1,
-      2: output2,
-      3: output3,
-      4: output4,
-      5: output5,
-    });
+    setOutputs({ 1: result1, 2: result2, 3: result3, 4: result4, 5: result5 });
   };
 
   const setEquation = (id: number, value: string) => {
@@ -52,143 +45,88 @@ const FunctionChain: React.FC = () => {
   };
 
   useEffect(() => {
-    updateChain();
+    updateOutputs();
   }, [initialValue, equations]);
 
-  useEffect(() => {
+  const drawLine = (
+    type: string,
+    startElement: HTMLDivElement | null,
+    endElement: HTMLDivElement | null,
+    offset?: number[]
+  ) => {
     const svgContainer = document.getElementById("svg-lines");
-    if (svgContainer) {
-      svgContainer.innerHTML = ""; // Clear previous lines
+    if (!svgContainer || !startElement || !endElement) return;
+
+    const startRect = startElement.getBoundingClientRect();
+    const endRect = endElement.getBoundingClientRect();
+    const x1 = startRect.right;
+    const y1 = startRect.top + startRect.height / 2;
+    const x2 = endRect.left;
+    const y2 = endRect.top + endRect.height / 2;
+
+    const createLine = (x1: number, y1: number, x2: number, y2: number) => {
+      const line = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      line.setAttribute("x1", x1.toString());
+      line.setAttribute("y1", y1.toString());
+      line.setAttribute("x2", x2.toString());
+      line.setAttribute("y2", y2.toString());
+      line.setAttribute("stroke", "#0066FF");
+      line.setAttribute("stroke-width", "4");
+      line.setAttribute("stroke-opacity", "0.5");
+      line.setAttribute("stroke-linecap", "round");
+      svgContainer.appendChild(line);
+    };
+
+    const createCurvedLine = () => {
+      const controlPointX1 = x1 + 275;
+      const controlPointY1 = y1 - 50;
+      const controlPointX2 = x2 - 270;
+      const controlPointY2 = y2 + 50;
+
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      path.setAttribute(
+        "d",
+        `M ${x1} ${y1} C ${controlPointX1} ${controlPointY1}, ${controlPointX2} ${controlPointY2}, ${x2} ${y2}`
+      );
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", "#0066FF");
+      path.setAttribute("stroke-width", "4");
+      path.setAttribute("stroke-opacity", "0.5");
+      path.setAttribute("stroke-linecap", "round");
+      svgContainer.appendChild(path);
+    };
+
+    if (type === "straight") {
+      createLine(x1, y1, x2, y1); // Horizontal
+      createLine(x2, y1, x2, y2); // Vertical
+    } else if (type === "curved") {
+      createCurvedLine();
+    } else if (type === "offset") {
+      const [offsetStart, offsetEnd] = offset || [0, 0];
+      createLine(
+        startRect.left + startRect.width / 2,
+        startRect.bottom - offsetStart,
+        endRect.left + endRect.width / 2,
+        endRect.bottom - offsetEnd
+      );
     }
+  };
 
-    const drawStraightLine = (
-      startElement: HTMLDivElement | null,
-      endElement: HTMLDivElement | null
-    ) => {
-      if (startElement && endElement) {
-        const startRect = startElement.getBoundingClientRect();
-        const endRect = endElement.getBoundingClientRect();
+  useEffect(() => {
+    document.getElementById("svg-lines")?.replaceChildren();
 
-        const x1 = startRect.right;
-        const y1 = startRect.top + startRect.height / 2;
-        const x2 = endRect.left;
-        const y2 = endRect.top + endRect.height / 2;
-
-        const line1 = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "line"
-        );
-        line1.setAttribute("x1", x1.toString());
-        line1.setAttribute("y1", y1.toString());
-        line1.setAttribute("x2", x2.toString());
-        line1.setAttribute("y2", y1.toString()); // Horizontal line
-        line1.setAttribute("stroke", "#0066FF");
-        line1.setAttribute("stroke-width", "4");
-        line1.setAttribute("stroke-opacity", "0.5");
-        line1.setAttribute("stroke-linecap", "round");
-
-        const line2 = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "line"
-        );
-        line2.setAttribute("x1", x2.toString());
-        line2.setAttribute("y1", y1.toString());
-        line2.setAttribute("x2", x2.toString());
-        line2.setAttribute("y2", y2.toString()); // Vertical line
-        line2.setAttribute("stroke", "#0066FF");
-        line2.setAttribute("stroke-width", "4");
-        line2.setAttribute("stroke-opacity", "0.5");
-        line2.setAttribute("stroke-linecap", "round");
-
-        svgContainer?.appendChild(line1);
-        svgContainer?.appendChild(line2);
-      }
-    };
-
-    const drawCurvedLine = (
-      startElement: HTMLDivElement | null,
-      endElement: HTMLDivElement | null
-    ) => {
-      if (startElement && endElement) {
-        const startRect = startElement.getBoundingClientRect();
-        const endRect = endElement.getBoundingClientRect();
-
-        const x1 = startRect.right;
-        const y1 = startRect.top + startRect.height / 2;
-        const x2 = endRect.left;
-        const y2 = endRect.top + endRect.height / 2;
-
-        const controlPointX1 = x1 + 275;
-        const controlPointY1 = y1 - 50;
-        const controlPointX2 = x2 - 270;
-        const controlPointY2 = y2 + 50;
-
-        const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        const d = `
-          M ${x1} ${y1}
-          C ${controlPointX1} ${controlPointY1}, ${controlPointX2} ${controlPointY2}, ${x2} ${y2}
-        `;
-
-        path.setAttribute("d", d);
-        path.setAttribute("fill", "none");
-        path.setAttribute("stroke", "#0066FF");
-        path.setAttribute("stroke-width", "4");
-        path.setAttribute("stroke-opacity", "0.5");
-        path.setAttribute("stroke-linecap", "round");
-
-        // Append to the SVG container
-        const svgContainer = document.getElementById("svg-lines");
-        svgContainer?.appendChild(path);
-      }
-    };
-
-    const drawOffsetHorizontalLine = (
-      startElement: HTMLDivElement | null,
-      endElement: HTMLDivElement | null,
-      offsetStartElem: number,
-      offsetEndElem: number
-    ) => {
-      if (startElement && endElement) {
-        const startRect = startElement.getBoundingClientRect();
-        const endRect = endElement.getBoundingClientRect();
-
-        // Calculate coordinates for a horizontal line with an offset
-        const x1 = startRect.left + startRect.width / 2;
-        const y1 = startRect.bottom - offsetStartElem;
-        const x2 = endRect.left + endRect.width / 2;
-        const y2 = endRect.bottom - offsetEndElem;
-
-        const line = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "line"
-        );
-        line.setAttribute("x1", x1.toString());
-        line.setAttribute("y1", y1.toString());
-        line.setAttribute("x2", x2.toString());
-        line.setAttribute("y2", y2.toString());
-        line.setAttribute("stroke", "#0066FF");
-        line.setAttribute("stroke-width", "4");
-        line.setAttribute("stroke-opacity", "0.5");
-        line.setAttribute("stroke-linecap", "round");
-
-        svgContainer?.appendChild(line);
-      }
-    };
-
-    drawOffsetHorizontalLine(
-      initialInputRef.current,
-      cardRefs.current[0],
-      10,
-      10
-    );
-    drawStraightLine(cardRefs.current[1], cardRefs.current[2]);
-    drawCurvedLine(cardRefs.current[3], cardRefs.current[6]);
-    drawStraightLine(cardRefs.current[7], cardRefs.current[8]);
-    drawCurvedLine(cardRefs.current[9], cardRefs.current[4]);
-    drawOffsetHorizontalLine(cardRefs.current[5], finalOutputRef.current, 10, 10);
+    drawLine("offset", initialInputRef.current, cardRefs.current[0], [10, 10]);
+    drawLine("straight", cardRefs.current[1], cardRefs.current[2]);
+    drawLine("curved", cardRefs.current[3], cardRefs.current[6]);
+    drawLine("straight", cardRefs.current[7], cardRefs.current[8]);
+    drawLine("curved", cardRefs.current[9], cardRefs.current[4]);
+    drawLine("offset", cardRefs.current[5], finalOutputRef.current, [10, 10]);
   }, [outputs]);
 
   return (
@@ -216,55 +154,37 @@ const FunctionChain: React.FC = () => {
               </div>
             </div>
           </div>
-          <div>
-            <FunctionCard
-              id={1}
-              equation={equations[1]}
-              setEquation={setEquation}
-              output={outputs[1]}
-              nextFunction="2"
-              connectorRefInput={(el) =>
-                (cardRefs.current[0] = el as HTMLDivElement)
-              }
-              connectorRefOutput={(el) =>
-                (cardRefs.current[1] = el as HTMLDivElement)
-              }
-            />
-          </div>
-        </div>
-
-        <div>
           <FunctionCard
-            id={2}
-            equation={equations[2]}
+            id={1}
+            equation={equations[1]}
             setEquation={setEquation}
-            output={outputs[2]}
-            nextFunction="4"
-            connectorRefInput={(el) =>
-              (cardRefs.current[2] = el as HTMLDivElement)
-            }
-            connectorRefOutput={(el) =>
-              (cardRefs.current[3] = el as HTMLDivElement)
-            }
+            output={outputs[1]}
+            nextFunction="2"
+            connectorRefInput={(el) => (cardRefs.current[0] = el!)}
+            connectorRefOutput={(el) => (cardRefs.current[1] = el!)}
           />
         </div>
 
+        <FunctionCard
+          id={2}
+          equation={equations[2]}
+          setEquation={setEquation}
+          output={outputs[2]}
+          nextFunction="4"
+          connectorRefInput={(el) => (cardRefs.current[2] = el!)}
+          connectorRefOutput={(el) => (cardRefs.current[3] = el!)}
+        />
+
         <div className="flex gap-4 items-end">
-          <div>
-            <FunctionCard
-              id={3}
-              equation={equations[3]}
-              setEquation={setEquation}
-              output={outputs[3]}
-              nextFunction="-"
-              connectorRefInput={(el) =>
-                (cardRefs.current[4] = el as HTMLDivElement)
-              }
-              connectorRefOutput={(el) =>
-                (cardRefs.current[5] = el as HTMLDivElement)
-              }
-            />
-          </div>
+          <FunctionCard
+            id={3}
+            equation={equations[3]}
+            setEquation={setEquation}
+            output={outputs[3]}
+            nextFunction="-"
+            connectorRefInput={(el) => (cardRefs.current[4] = el!)}
+            connectorRefOutput={(el) => (cardRefs.current[5] = el!)}
+          />
 
           <div className="flex flex-col items-center">
             <label className="bg-[#4CAF79] text-white font-semibold px-4 py-1 rounded-full mb-2 text-sm">
@@ -278,7 +198,7 @@ const FunctionChain: React.FC = () => {
                 readOnly
                 type="number"
                 value={outputs[3] ?? initialValue}
-                className="text-black text-lg font-bold focus:outline-none py-2 px-3 rounded-xl-full  bg-[transparent]  w-[65px] border-[#C5F2DA] border-l-2"
+                className="text-black text-lg font-bold focus:outline-none py-2 px-3 rounded-xl-full bg-transparent w-[65px] border-[#C5F2DA] border-l-2"
               />
             </div>
           </div>
@@ -286,36 +206,25 @@ const FunctionChain: React.FC = () => {
       </div>
 
       <div className="flex space-x-36">
-        <div>
-          <FunctionCard
-            id={4}
-            equation={equations[4]}
-            setEquation={setEquation}
-            output={outputs[4]}
-            nextFunction="5"
-            connectorRefInput={(el) =>
-              (cardRefs.current[6] = el as HTMLDivElement)
-            }
-            connectorRefOutput={(el) =>
-              (cardRefs.current[7] = el as HTMLDivElement)
-            }
-          />
-        </div>
-        <div>
-          <FunctionCard
-            id={5}
-            equation={equations[5]}
-            setEquation={setEquation}
-            output={outputs[5]}
-            nextFunction="3"
-            connectorRefInput={(el) =>
-              (cardRefs.current[8] = el as HTMLDivElement)
-            }
-            connectorRefOutput={(el) =>
-              (cardRefs.current[9] = el as HTMLDivElement)
-            }
-          />
-        </div>
+        <FunctionCard
+          id={4}
+          equation={equations[4]}
+          setEquation={setEquation}
+          output={outputs[4]}
+          nextFunction="5"
+          connectorRefInput={(el) => (cardRefs.current[6] = el!)}
+          connectorRefOutput={(el) => (cardRefs.current[7] = el!)}
+        />
+
+        <FunctionCard
+          id={5}
+          equation={equations[5]}
+          setEquation={setEquation}
+          output={outputs[5]}
+          nextFunction="3"
+          connectorRefInput={(el) => (cardRefs.current[8] = el!)}
+          connectorRefOutput={(el) => (cardRefs.current[9] = el!)}
+        />
       </div>
     </div>
   );
